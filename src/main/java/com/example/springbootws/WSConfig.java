@@ -9,7 +9,7 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
  * @version V1.0 2019/12/20 3:16
  * @email catfish_lty@qq.com
  **/
-@Configuration
+//@Configuration
 public class WSConfig {
     @Bean
     public ServerEndpointExporter serverEndpointExporter(){

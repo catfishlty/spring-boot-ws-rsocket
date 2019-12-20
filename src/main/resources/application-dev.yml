@@ -1,0 +1,10 @@
+server:
+  port: 9091
+spring:
+  application:
+    name: websocket-demo
+  rsocket:
+    server:
+      mapping-path: /ws
+      transport: websocket
+      port: 9090

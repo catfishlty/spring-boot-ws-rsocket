@@ -14,8 +14,6 @@ import lombok.extern.slf4j.Slf4j;
  * @version V1.0 2019/12/20 3:17
  * @email catfish_lty@qq.com
  **/
-@Component
-@ServerEndpoint("/ws")
 @Slf4j
 public class WSServer {
     /**
