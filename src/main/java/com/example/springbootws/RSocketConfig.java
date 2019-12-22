@@ -1,6 +1,7 @@
 package com.example.springbootws;
 
 import java.net.URI;
+import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.rsocket.RSocketProperties;
@@ -28,7 +29,7 @@ public class RSocketConfig {
             .connectWebSocket(getURI(rSocketProps));
     }
     private URI getURI(RSocketProperties rSocketProps) {
-        return URI.create(String.format("ws://localhost:%d%s",
+        return URI.create(String.format("ws://127.0.0.1:%d%s",
             rSocketProps.getServer().getPort(), rSocketProps.getServer().getMappingPath()));
     }
 }
