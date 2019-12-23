@@ -8,10 +8,13 @@ import java.util.stream.Collectors;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.rsocket.RSocket;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
@@ -27,34 +30,11 @@ import reactor.core.publisher.SynchronousSink;
 @MessageMapping("biz")
 @Slf4j
 public class MsgController {
-    private Queue<MsgResponseVO> q = new ArrayBlockingQueue<>(20);
-    private AtomicBoolean end = new AtomicBoolean(false);
-    private Consumer<FluxSink<MsgResponseVO>> consumer = sink -> {
-        while (!q.isEmpty() || !end.get()) {
-            if (q.isEmpty() && !end.get()) {
-                try {
-                    Thread.sleep(2000);
-                    log.info("consumer sleep");
-                    MsgResponseVO vo = new MsgResponseVO();
-                    vo.setMsg("beat");
-                    sink.next(vo);
-                } catch (InterruptedException e) {
-                    log.error("", e);
-                }
-            } else {
-                sink.next(q.poll());
-            }
-        }
-        sink.complete();
-    };
-
     @MessageMapping("send")
     public Mono<MsgResponseVO> requestAndResponse(MsgRequestVO requestVO) {
         log.info("send: msg={},sendAt={}", requestVO.getMsg(), requestVO.getSendAt());
         MsgResponseVO responseVO = new MsgResponseVO();
         responseVO.setMsg(requestVO.getMsg().toUpperCase());
-        end.set(false);
-        q.add(responseVO);
         return Mono.just(responseVO);
     }
 
@@ -63,7 +43,6 @@ public class MsgController {
         log.info("close: msg={},sendAt={}", requestVO.getMsg(), requestVO.getSendAt());
         MsgResponseVO responseVO = new MsgResponseVO();
         responseVO.setMsg(requestVO.getMsg().toUpperCase());
-        end.set(true);
         return Mono.just(responseVO);
     }
 
@@ -75,7 +54,7 @@ public class MsgController {
 
     @MessageMapping("stream")
     public Flux<MsgResponseVO> requestStream(MsgRequestVO requestVO) {
-        return Flux.create(consumer);
+        return Flux.empty();
     }
 
     @MessageMapping("chan")
