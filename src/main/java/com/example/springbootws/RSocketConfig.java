@@ -5,13 +5,14 @@ import java.net.URI;
 import org.springframework.boot.autoconfigure.rsocket.RSocketProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.rsocket.ClientRSocketFactoryConfigurer;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.RSocketStrategies;
 
 import com.example.springbootws.session.ConnectManager;
+import com.example.springbootws.session.SessionManager;
 
-import io.rsocket.RSocketFactory;
+import io.rsocket.SocketAcceptor;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 /**
@@ -20,16 +21,21 @@ import reactor.core.publisher.Mono;
  * @email catfish_lty@qq.com
  */
 @Configuration
+@Slf4j
 public class RSocketConfig {
-
     @Bean
     public Mono<RSocketRequester> rSocketRequester(
         RSocketStrategies rSocketStrategies,
-        RSocketProperties rSocketProps, ConnectManager connectManager) {
+        RSocketProperties rSocketProps) {
         return RSocketRequester.builder()
             .rsocketStrategies(rSocketStrategies)
-            .rsocketFactory(rsocketFactory -> rsocketFactory.acceptor(connectManager))
             .connectWebSocket(getURI(rSocketProps));
+
+    }
+
+    @Bean
+    public SocketAcceptor socketAcceptor(SessionManager sessionManager) {
+        return new ConnectManager(sessionManager);
     }
 
     private URI getURI(RSocketProperties rSocketProps) {
