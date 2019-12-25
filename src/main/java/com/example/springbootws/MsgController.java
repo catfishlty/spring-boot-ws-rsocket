@@ -5,9 +5,7 @@ import java.util.Map;
 import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.rsocket.RSocketRequester;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +22,9 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class MsgController {
     @MessageMapping("send")
-    public Mono<MsgResponseVO> requestAndResponse(MsgRequestVO requestVO, @Headers Map<String,Object> m, RSocketRequester requester) {
-        log.info("send: msg={},sendAt={},header={},requester={}", requestVO.getMsg(), requestVO.getSendAt(), m.entrySet(),requester);
+    public Mono<MsgResponseVO> requestAndResponse(MsgRequestVO requestVO, @Headers Map<String, Object> m, RSocketRequester requester) {
+        log.info("send: msg={},sendAt={},header={}", requestVO.getMsg(), requestVO.getSendAt(), m.entrySet());
+        log.info("send rsocket: {}", requester.rsocket().hashCode());
         MsgResponseVO responseVO = new MsgResponseVO();
         responseVO.setMsg(requestVO.getMsg().toUpperCase());
         return Mono.just(responseVO);
