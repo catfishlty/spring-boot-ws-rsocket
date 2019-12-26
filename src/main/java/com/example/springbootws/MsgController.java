@@ -8,9 +8,14 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.springbootws.session.ConnectManager;
+import com.example.springbootws.utils.JacksonUtil;
+
+import io.rsocket.util.DefaultPayload;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * @author Catfish
@@ -21,12 +26,26 @@ import reactor.core.publisher.Mono;
 @MessageMapping("biz")
 @Slf4j
 public class MsgController {
+    private final ConnectManager connectManager;
+
+    public MsgController(ConnectManager connectManager) {
+        this.connectManager = connectManager;
+    }
+
     @MessageMapping("send")
     public Mono<MsgResponseVO> requestAndResponse(MsgRequestVO requestVO, @Headers Map<String, Object> m, RSocketRequester requester) {
-        log.info("send: msg={},sendAt={},header={}", requestVO.getMsg(), requestVO.getSendAt(), m.entrySet());
-        log.info("send rsocket: {}", requester.rsocket().hashCode());
+        log.info("send: id={}, msg={}, sendAt={}, header={}", requester.rsocket().hashCode(), requestVO.getMsg(), requestVO.getSendAt(), m.entrySet());
         MsgResponseVO responseVO = new MsgResponseVO();
         responseVO.setMsg(requestVO.getMsg().toUpperCase());
+        log.info("online: {}", connectManager.online());
+        requester.rsocket()
+            .requestChannel(s -> {
+                MsgResponseVO vo = new MsgResponseVO();
+                vo.setMsg("hello");
+                s.onNext(DefaultPayload.create(JacksonUtil.objectToJson(vo)));
+            })
+            .subscribeOn(Schedulers.elastic())
+            .subscribe();
         return Mono.just(responseVO);
     }
 
