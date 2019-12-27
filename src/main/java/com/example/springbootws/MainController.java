@@ -31,7 +31,7 @@ public class MainController {
     @ConnectMapping()
     public Mono<Void> connect(@Headers Map<String, Object> m, RSocketRequester requester) {
         String connId = String.valueOf(requester.rsocket().hashCode());
-        log.info("connect: {}, {}", requester.rsocket().hashCode(), m);
+        log.info("connect: {}", requester.rsocket().hashCode());
         connectManager.connect(connId, requester.rsocket());
         requester.rsocket().onClose()
             .onErrorResume(e -> Mono.empty()

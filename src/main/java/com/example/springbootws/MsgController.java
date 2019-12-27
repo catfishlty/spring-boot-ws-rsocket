@@ -1,6 +1,7 @@
 package com.example.springbootws;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
@@ -15,6 +16,7 @@ import io.rsocket.util.DefaultPayload;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoProcessor;
 import reactor.core.scheduler.Schedulers;
 
 /**
@@ -34,6 +36,8 @@ public class MsgController {
 
     @MessageMapping("send")
     public Mono<MsgResponseVO> requestAndResponse(MsgRequestVO requestVO, @Headers Map<String, Object> m, RSocketRequester requester) {
+        MonoProcessor processor = (MonoProcessor) m.get("rsocketResponse");
+        log.info("{}",processor.currentContext().stream().collect(Collectors.toList()));
         log.info("send: id={}, msg={}, sendAt={}, header={}", requester.rsocket().hashCode(), requestVO.getMsg(), requestVO.getSendAt(), m.entrySet());
         MsgResponseVO responseVO = new MsgResponseVO();
         responseVO.setMsg(requestVO.getMsg().toUpperCase());
