@@ -1,11 +1,14 @@
 package com.example.springbootws;
 
+import java.util.function.Consumer;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.rsocket.messaging.RSocketStrategiesCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.rsocket.DefaultMetadataExtractor;
 import org.springframework.messaging.rsocket.MetadataExtractor;
+import org.springframework.messaging.rsocket.MetadataExtractorRegistry;
 import org.springframework.messaging.rsocket.RSocketStrategies;
 import org.springframework.web.util.pattern.PathPatternRouteMatcher;
 
@@ -30,13 +33,19 @@ public class RSocketConfig {
 //            }
 //        };
 //    }
-//    @Bean
-//    public RSocketStrategies rSocketStrategies(ObjectProvider<RSocketStrategiesCustomizer> customizers) {
-//        RSocketStrategies.Builder builder = RSocketStrategies.builder();
-//        builder.routeMatcher(new PathPatternRouteMatcher());
-//        MetadataExtractor extractor = new DefaultMetadataExtractor(builder.));
-//        builder.metadataExtractor(MetadataExtractor)
-//        customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
-//        return builder.build();
-//    }
+    @Bean
+    public RSocketStrategies rSocketStrategies(ObjectProvider<RSocketStrategiesCustomizer> customizers) {
+        RSocketStrategies.Builder builder = RSocketStrategies.builder()
+            .metadataExtractorRegistry(new Consumer<MetadataExtractorRegistry>() {
+                @Override
+                public void accept(MetadataExtractorRegistry metadataExtractorRegistry) {
+                    metadataExtractorRegistry.metadataToExtract();
+                }
+            })
+        builder.routeMatcher(new PathPatternRouteMatcher());
+        MetadataExtractor extractor = new DefaultMetadataExtractor(builder.));
+        builder.metadataExtractor(extractor)
+        customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
+        return builder.build();
+    }
 }
