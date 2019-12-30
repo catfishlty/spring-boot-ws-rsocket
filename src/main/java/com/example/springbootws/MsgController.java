@@ -36,20 +36,18 @@ public class MsgController {
 
     @MessageMapping("send")
     public Mono<MsgResponseVO> requestAndResponse(MsgRequestVO requestVO, @Headers Map<String, Object> m, RSocketRequester requester) {
-        MonoProcessor processor = (MonoProcessor) m.get("rsocketResponse");
-        log.info("{}",processor.currentContext().stream().collect(Collectors.toList()));
         log.info("send: id={}, msg={}, sendAt={}, header={}", requester.rsocket().hashCode(), requestVO.getMsg(), requestVO.getSendAt(), m.entrySet());
         MsgResponseVO responseVO = new MsgResponseVO();
         responseVO.setMsg(requestVO.getMsg().toUpperCase());
         log.info("online: {}", connectManager.online());
-        requester.rsocket()
-            .requestChannel(s -> {
-                MsgResponseVO vo = new MsgResponseVO();
-                vo.setMsg("hello");
-                s.onNext(DefaultPayload.create(JacksonUtil.objectToJson(vo)));
-            })
-            .subscribeOn(Schedulers.elastic())
-            .subscribe();
+//        requester.rsocket()
+//            .requestChannel(s -> {
+//                MsgResponseVO vo = new MsgResponseVO();
+//                vo.setMsg("hello");
+//                s.onNext(DefaultPayload.create(JacksonUtil.objectToJson(vo)));
+//            })
+//            .subscribeOn(Schedulers.elastic())
+//            .subscribe();
         return Mono.just(responseVO);
     }
 
