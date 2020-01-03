@@ -10,6 +10,6 @@ import lombok.Data;
  * @email catfish_lty@qq.com
  */
 @Data
-public class LoginRequestVO implements Serializable {
-    private String code;
+public class LoginResponseVO implements Serializable {
+    private String token;
 }

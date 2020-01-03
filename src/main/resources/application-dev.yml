@@ -8,3 +8,6 @@ spring:
       mapping-path: /ws
       transport: websocket
       port: 9090
+jwt:
+  secret: "awegbfdiwueagfui"
+  expiration: 86400000

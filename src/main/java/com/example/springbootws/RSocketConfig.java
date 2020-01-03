@@ -1,9 +1,5 @@
 package com.example.springbootws;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
-
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -18,29 +14,19 @@ import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.messaging.rsocket.RSocketStrategies;
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.authorization.AuthorizationDecision;
-import org.springframework.security.authorization.ReactiveAuthorizationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.rsocket.EnableRSocketSecurity;
 import org.springframework.security.config.annotation.rsocket.RSocketSecurity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.rsocket.api.PayloadExchange;
-import org.springframework.security.rsocket.api.PayloadInterceptor;
-import org.springframework.security.rsocket.api.PayloadInterceptorChain;
 import org.springframework.security.rsocket.core.PayloadSocketAcceptorInterceptor;
-import org.springframework.security.rsocket.core.SecuritySocketAcceptorInterceptor;
-import org.springframework.security.rsocket.util.matcher.PayloadExchangeAuthorizationContext;
 import org.springframework.security.rsocket.util.matcher.PayloadExchangeMatcher;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.util.pattern.PathPatternRouteMatcher;
 
+import com.example.springbootws.auth.BearerAuthAuthenticationManager;
 import com.example.springbootws.auth.BearerAuthPayloadExchangeConverter;
 import com.example.springbootws.auth.BearerAuthPayloadInterceptor;
 import com.example.springbootws.common.JsonMetadataExtractor;
-import com.example.springbootws.utils.JacksonUtil;
+import com.example.springbootws.utils.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -77,23 +63,47 @@ public class RSocketConfig {
     }
 
     @Bean
-    public PayloadInterceptor bearerAuthPayloadInterceptor(ReactiveAuthenticationManager authenticationManager){
-        BearerAuthPayloadInterceptor interceptor =  new BearerAuthPayloadInterceptor(authenticationManager);
+    public ReactiveAuthenticationManager reactiveAuthenticationManager(JwtUtil jwtUtil) {
+        return new BearerAuthAuthenticationManager(jwtUtil);
+    }
+
+    @Bean
+    public BearerAuthPayloadInterceptor bearerAuthPayloadInterceptor(ReactiveAuthenticationManager authenticationManager) {
+        BearerAuthPayloadInterceptor interceptor = new BearerAuthPayloadInterceptor(authenticationManager);
         interceptor.setOrder(0);
         interceptor.setAuthenticationConverter(new BearerAuthPayloadExchangeConverter());
         return interceptor;
     }
 
+//    @Bean
+//    public MapReactiveUserDetailsService userDetailsService() {
+//        UserDetails user = User.withDefaultPasswordEncoder()
+//            .username("user")
+//            .password("password")
+//            .roles("USER")
+//            .build();
+//        return new MapReactiveUserDetailsService(user);
+//    }
+
+
     @Bean
-    public PayloadSocketAcceptorInterceptor rSocketInterceptor(RSocketSecurity rSocket,BearerAuthPayloadInterceptor interceptor) {
+    public PayloadSocketAcceptorInterceptor rSocketInterceptor(RSocketSecurity rSocket, BearerAuthPayloadInterceptor interceptor) {
         rSocket
             .addPayloadInterceptor(interceptor)
             .authorizePayload(authorize -> {
                 authorize
-                .anyRequest().permitAll()
-                .anyExchange().permitAll()
+                    .matcher(new PayloadExchangeMatcher() {
+                        @Override
+                        public Mono<MatchResult> matches(PayloadExchange exchange) {
+                            return !exchange.getType().isRequest() ? MatchResult.match() : MatchResult.notMatch();
+                        }
+                    })
+                    .permitAll()
+                    .route("auth.**")
+                    .permitAll()
+                    .anyExchange().authenticated()
                 ;
-        });
+            });
         return rSocket.build();
     }
 

@@ -29,10 +29,15 @@ public class BearerAuthPayloadExchangeConverter implements PayloadExchangeAuthen
 
     @Override
     public Mono<Authentication> convert(PayloadExchange exchange) {
-        return Mono.fromCallable(() -> this.metadataExtractor
-            .extract(exchange.getPayload(), this.metadataMimeType))
-            .flatMap(metadata -> Mono.justOrEmpty(metadata.get(JsonAuthMetadata.TOKEN)))
-            .cast(JsonAuthMetadata.class)
-            .map(credentials -> new JsonAuthToken(credentials.getToken()));
+        return Mono.fromCallable(() -> {
+            return this.metadataExtractor
+                .extract(exchange.getPayload(), this.metadataMimeType);
+        })
+            .flatMap(metadata -> {
+                return Mono.justOrEmpty((String) metadata.get(BearerAuthMetadata.TOKEN));
+            })
+            .map(token -> {
+                return new BearerAuthToken(token);
+            });
     }
 }

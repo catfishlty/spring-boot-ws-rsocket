@@ -11,42 +11,41 @@ import org.springframework.security.core.GrantedAuthority;
  * @version V1.0 2020/1/2 17:35
  * @email catfish_lty@qq.com
  */
-public class JsonAuthToken extends AbstractAuthenticationToken {
+public class BearerAuthToken extends AbstractAuthenticationToken {
     /**
      * Creates a token with the supplied array of authorities.
      * @param authorities the collection of <tt>GrantedAuthority</tt>s for the principal
      * represented by this authentication object.
      */
-    private final Object principal;
-    private Object credentials;
+    private String token;
 
-    public JsonAuthToken(String token, Collection<? extends GrantedAuthority> authorities) {
+    public BearerAuthToken(String token, Collection<? extends GrantedAuthority> authorities) {
         super(authorities);
-        this.setAuthenticated(true);
-        principal = token;
-        credentials = token;
+        this.token = token;
     }
 
-    public JsonAuthToken(String token) {
+    public BearerAuthToken(String token) {
         super(Collections.emptySet());
-        this.setAuthenticated(true);
-        principal = token;
-        credentials = token;
+        this.token = token;
     }
 
     @Override
     public Object getCredentials() {
-        return this.credentials;
+        return token;
     }
 
     @Override
     public Object getPrincipal() {
-        return this.principal;
+        return token;
     }
 
     @Override
     public void eraseCredentials() {
         super.eraseCredentials();
-        credentials = null;
+        token = null;
+    }
+
+    public String getToken(){
+        return token;
     }
 }

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class JsonAuthMetadata {
+public class BearerAuthMetadata {
     public final static String TOKEN = "token";
     private String token;
 }
