@@ -1,5 +1,6 @@
 package com.example.springbootws.auth;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.convert.converter.Converter;
 
 import com.example.springbootws.utils.JwtUtil;
@@ -18,6 +19,9 @@ public class JwtAuthConverter implements Converter<String, JwtAuthToken> {
 
     @Override
     public JwtAuthToken convert(String token) {
+        if(StringUtils.isBlank(token)){
+            throw new RuntimeException("Token验证失败，token为空");
+        }
         return new JwtAuthToken(jwtUtil.getUidFromToken(token), jwtUtil.getExpirationDateFromToken(token).getTime());
     }
 }

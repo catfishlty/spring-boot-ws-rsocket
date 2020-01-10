@@ -52,10 +52,11 @@ public class MainController {
     }
 
     @MessageExceptionHandler
-    public Mono<ErrorDTO> handleError(Exception e){
+    public Mono<ErrorDTO> handleError(Exception e) {
         ErrorDTO dto = new ErrorDTO();
         dto.setCode(1000);
         dto.setDesc(e.getMessage());
+        log.error("Error Handler", e);
         return Mono.just(dto);
     }
 }

@@ -31,6 +31,7 @@ public class AuthController {
         requestVO.subscribe(loginRequestVO -> log.info("{}", loginRequestVO));
         LoginResponseVO responseVO = new LoginResponseVO();
         responseVO.setToken(jwtUtil.generateToken("test_user_01"));
+        log.info("login: token=[{}]",responseVO.getToken());
         return Mono.just(responseVO);
     }
 }
